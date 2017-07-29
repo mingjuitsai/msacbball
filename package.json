@@ -1,0 +1,23 @@
+{
+  "name": "msac-ball-timetable",
+  "version": "1.0.0",
+  "description": "Display MSAC bball court timetable in better way",
+  "main": "app.js",
+  "author": "Ray Tsai",
+  "license": "MIT",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mingjuitsai/msacbball-timetable.git"
+  },
+  "bugs": {
+    "url": "https://github.com/mingjuitsai/msacbball-timetable/issues"
+  },
+  "homepage": "https://github.com/mingjuitsai/msacbball-timetable#readme",
+  "dependencies": {
+    "cheerio": "^1.0.0-rc.2",
+    "phantom": "^4.0.5"
+  }
+}
