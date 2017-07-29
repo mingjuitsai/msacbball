@@ -46,14 +46,17 @@ phantomOpen(msacUrl).then(content => {
 function buildMsacData(content, date) {
 
   var $ = cheerio.load(content);
-  var data = {};
+  var data = {
+    id: '',
+    available: []
+  };
 
   for (let i = 1; i < 2; i++) {
     let column = 'booking_calendar' + (i === 1 ? '' : i);
     $(`#${column} .fc-event-time`).each(function(index, element) {
       // Build data
       data.id = i;
-      // data.push($(element).text());
+      data.available.unshift($(element).text());
     });
   }
   console.log(data);
