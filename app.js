@@ -43,12 +43,26 @@ phantomOpen(msacUrl).then(content => {
  *
  * The data parse closely based on how MSAC built their iframe html
  */
-function buildMsacData(content, date) {
+function buildMsacData(content, timetableDate) {
 
-  var $ = cheerio.load(content);
-  var data = {
+  var $ = cheerio.load(content),
+  data = {
     id: '',
     available: []
+  },
+  msacParser = {
+    range: function(time) {
+      if(typeof time === 'string') {
+        time = time.replace(/\s/g, '');
+        time = time.split('-');
+        console.log(time);
+      } else {
+        console.warn('parse range time must be string');
+      }
+    },
+    available: function(start, finish, unavailable, date) {
+
+    }
   };
 
   for (let i = 1; i < 2; i++) {
@@ -56,15 +70,19 @@ function buildMsacData(content, date) {
     $(`#${column} .fc-event-time`).each(function(index, element) {
       // Build data
       data.id = i;
-      data.available.unshift($(element).text());
+      msacParser.range($(element).text());
     });
   }
+
   console.log(data);
 }
 
+
+
+
+
+
 /* JSON
-
-
 [
   09-10-2017: {
     courts: [
