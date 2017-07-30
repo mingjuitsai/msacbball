@@ -46,32 +46,43 @@ phantomOpen(msacUrl).then(content => {
 function buildMsacData(content, timetableDate) {
 
   var $ = cheerio.load(content),
-  data = {
-    id: '',
-    available: []
-  },
-  msacParser = {
-    range: function(time) {
-      if(typeof time === 'string') {
-        time = time.replace(/\s/g, '');
-        time = time.split('-');
-        console.log(time);
-      } else {
-        console.warn('parse range time must be string');
-      }
+    data = {
+      id: '',
+      unavailable: []
     },
-    available: function(start, finish, unavailable, date) {
+    msacParser = {
+      range: function(time, date) {
+        if (typeof time === 'string') {
+          time = time.replace(/\s/g, '');
+          time = time.split('-');
+          return {
+            start: time[0],
+            end: time[1]
+          };
+        } else {
+          console.warn('parse range time must be string');
+        }
+      },
+      available: function(start, finish, unavailable, date) {
 
-    }
-  };
+      }
+    };
 
+  // Loop through each column, then find all unavailable time range
+  // parse to find the available time
   for (let i = 1; i < 2; i++) {
-    let column = 'booking_calendar' + (i === 1 ? '' : i);
-    $(`#${column} .fc-event-time`).each(function(index, element) {
-      // Build data
-      data.id = i;
-      msacParser.range($(element).text());
-    });
+    let column = 'booking_calendar' + (i === 1 ? '' : i),
+    timeStrings = $(`#${column} .fc-event-time`).get();
+
+
+    // Need to do this backward cuz of how MSAC html structured
+    for (let s = timeStrings.length - 1; s >= 0 ; s--) {
+      let timeString = $(timeStrings[s]).text();
+      console.log(msacParser.range(timeString, timetableDate));
+    }
+
+    // data.id = i;
+    // data.unavailable.push());
   }
 
   console.log(data);
