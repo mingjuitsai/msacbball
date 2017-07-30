@@ -4,6 +4,13 @@ const phantom = require('phantom');
 const fecha = require('fecha');
 
 /**
+ * Helper function
+ */
+function pad(n) {
+  return (n < 10) ? ("0" + n) : n;
+}
+
+/**
  * Open url with phantom JS
  * @param  {url} url URL to open
  * @return {content}     return content html if success
@@ -46,7 +53,7 @@ phantomOpen(msacUrl).then(content => {
 function buildCourtsData(content, timetableDate) {
 
   var $ = cheerio.load(content),
-  data = [];
+    data = [];
 
   // Loop through each column, then find all unavailable time range
   // parse to find the available time
@@ -56,18 +63,59 @@ function buildCourtsData(content, timetableDate) {
       available: [],
       unavailable: []
     };
-    
+
     let column = 'booking_calendar' + (i === 1 ? '' : i),
-    timeStrings = $(`#${column} .fc-event-time`).get();
+      timeLabels = $(`#${column} .fc-event-time`).get();
 
     // Need to do this backward cuz of how MSAC html structured
-    for (let s = timeStrings.length - 1; s >= 0 ; s--) {
-      let timeString = $(timeStrings[s]).text();
-      court.unavailable.push(timeRangeSplit(timeString));
+    for (let s = timeLabels.length - 1; s >= 0; s--) {
+      let timeLabel = timeLabels[s];
+      let timeLabelText = $(timeLabels[s]).text();
+      let unavailableTimeRanges = twentyfourHourClock(timeLabel, timeRangeSplit(timeLabelText));
+      console.log(unavailableTimeRanges);
+      court.unavailable.push(unavailableTimeRanges);
     }
 
-    // Covert the time into 24hr format and timestamp
-    
+    function twentyfourHourClock(timeLabel, timeRange) {
+      // Transform MSAC timetable from 12 hr clock to 24 hr clock
+      // bit hacky way to tell the am/pm, maybe a better way?
+      var top = parseInt($(timeLabel).closest('.fc-event').css('top'), 10),
+        height = parseInt($(timeLabel).closest('.fc-event').css('height'), 10),
+        startTime = timeRange.start.split(':'),
+        startHr = parseInt(startTime[0]),
+        startMin = startTime[1],
+        endTime = timeRange.end.split(':'),
+        endHr = parseInt(endTime[0]),
+        endMin = endTime[1];
+
+      console.log(top);
+
+      // If over 12pm
+      if (top >= 295 && startHr !== 12) {
+        timeRange.start = pad(startHr + 12) + ':' + startMin;
+      } else if (top + height >= 295 && startHr !== 12) {
+        timeRange.end = pad(endHr + 12) + ':' + endMin;
+      } else if (startHr === 12) {
+        // less than 12pm but hr is 12
+        timeRange.start = pad(0) + ':' + startMin;
+      }
+
+      return timeRange;
+    }
+
+    // Covert the time into 24hr format then Date object
+    (function() {
+      var hours = 0;
+
+      court.unavailable.forEach(function(unavailable, index) {});
+    });
+
+    /**
+     { start: '12:00', end: '6:00' },
+     { start: '7:00', end: '7:30' },
+     { start: '8:00', end: '11:59' }
+     */
+
 
     console.log(court);
 
