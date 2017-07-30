@@ -72,7 +72,7 @@ function buildCourtsData(content, timetableDate) {
       let timeLabel = timeLabels[s];
       let timeLabelText = $(timeLabels[s]).text();
       let unavailableTimeRanges = twentyfourHourClock(timeLabel, timeRangeSplit(timeLabelText));
-      console.log(unavailableTimeRanges);
+      unavailableTimeRanges = timeRangeToDateObj(unavailableTimeRanges);
       court.unavailable.push(unavailableTimeRanges);
     }
 
@@ -88,7 +88,7 @@ function buildCourtsData(content, timetableDate) {
         endHr = parseInt(endTime[0]),
         endMin = endTime[1];
 
-      console.log(top);
+      // console.log(top);
 
       // If over 12pm
       if (top >= 295 && startHr !== 12) {
@@ -99,16 +99,16 @@ function buildCourtsData(content, timetableDate) {
         // less than 12pm but hr is 12
         timeRange.start = pad(0) + ':' + startMin;
       }
-
       return timeRange;
     }
 
-    // Covert the time into 24hr format then Date object
-    (function() {
-      var hours = 0;
+    function timeRangeToDateObj(timeRange) {
+      var date = fecha.format(timetableDate, 'YYYY-MM-DD');
+      timeRange.start = date + 'T' + timeRange.start;
+      timeRange.end = date + 'T' + timeRange.end;
+      return timeRange;
+    }
 
-      court.unavailable.forEach(function(unavailable, index) {});
-    });
 
     /**
      { start: '12:00', end: '6:00' },
