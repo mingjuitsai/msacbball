@@ -32,7 +32,7 @@ var queryDate = fecha.format(dateObj, 'YYYY-MM-DD');
 
 var msacUrl = 'https://secure.activecarrot.com/public/facility/iframe_read_only/33/778/' + queryDate;
 phantomOpen(msacUrl).then(content => {
-  buildMsacData(content, dateObj);
+  buildCourtsData(content, dateObj);
 });
 
 
@@ -43,49 +43,51 @@ phantomOpen(msacUrl).then(content => {
  *
  * The data parse closely based on how MSAC built their iframe html
  */
-function buildMsacData(content, timetableDate) {
+function buildCourtsData(content, timetableDate) {
 
   var $ = cheerio.load(content),
-    data = {
-      id: '',
-      unavailable: []
-    },
-    msacParser = {
-      range: function(time, date) {
-        if (typeof time === 'string') {
-          time = time.replace(/\s/g, '');
-          time = time.split('-');
-          return {
-            start: time[0],
-            end: time[1]
-          };
-        } else {
-          console.warn('parse range time must be string');
-        }
-      },
-      available: function(start, finish, unavailable, date) {
-
-      }
-    };
+  data = [];
 
   // Loop through each column, then find all unavailable time range
   // parse to find the available time
   for (let i = 1; i < 2; i++) {
+    let court = {
+      id: '',
+      available: [],
+      unavailable: []
+    };
+    
     let column = 'booking_calendar' + (i === 1 ? '' : i),
     timeStrings = $(`#${column} .fc-event-time`).get();
-
 
     // Need to do this backward cuz of how MSAC html structured
     for (let s = timeStrings.length - 1; s >= 0 ; s--) {
       let timeString = $(timeStrings[s]).text();
-      console.log(msacParser.range(timeString, timetableDate));
+      court.unavailable.push(timeRangeSplit(timeString));
     }
 
-    // data.id = i;
-    // data.unavailable.push());
+    // Covert the time into 24hr format and timestamp
+    
+
+    console.log(court);
+
+    data.push(court);
   }
 
-  console.log(data);
+
+  function timeRangeSplit(range) {
+    if (typeof range === 'string') {
+      range = range.replace(/\s/g, '');
+      range = range.split('-');
+      return {
+        start: range[0],
+        end: range[1]
+      };
+    } else {
+      console.warn('parse range time must be string');
+    }
+  }
+
 }
 
 
