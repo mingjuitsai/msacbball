@@ -33,13 +33,30 @@ async function phantomOpen(url) {
 };
 
 
+/**
+ * Request court data
+ */
+var data = {};
+var queryDates = [
+  new Date()
+]; 
 
-var dateObj = new Date(2017, 7, 1);
-var queryDate = fecha.format(dateObj, 'YYYY-MM-DD');
+/**
+ * TODO: 
+ * Only request a data fetch to next day data and next 6 days
+ * Put data into JSON and save to local disk
+ */
 
-var msacUrl = 'https://secure.activecarrot.com/public/facility/iframe_read_only/33/778/' + queryDate;
-phantomOpen(msacUrl).then(content => {
-  buildCourtsData(content, dateObj);
+queryDates.forEach( function(queryDate) {
+  queryDate = fecha.format(queryDate, 'YYYY-MM-DD');
+  var queryPrefix = 'https://secure.activecarrot.com/public/facility/iframe_read_only/33/778/',
+  queryUrl = queryPrefix + queryDate;
+  // Get data
+  phantomOpen(queryUrl).then(content => {
+    data[queryDate] = {};
+    data[queryDate]['courts'] = buildCourtsData(content, queryDate);
+    console.log(data);
+  });
 });
 
 
@@ -53,14 +70,13 @@ phantomOpen(msacUrl).then(content => {
 function buildCourtsData(content, timetableDate) {
 
   var $ = cheerio.load(content),
-    data = [];
+    court_data = {};
 
   // Loop through each column, then find all unavailable time range
   // parse to find the available time
   for (let i = 1; i < 2; i++) {
     let court = {
       id: '',
-      available: [],
       unavailable: []
     };
 
@@ -72,10 +88,13 @@ function buildCourtsData(content, timetableDate) {
       let timeLabel = timeLabels[s];
       let timeLabelText = $(timeLabels[s]).text();
       let unavailableTimeRanges = twentyfourHourClock(timeLabel, timeRangeSplit(timeLabelText));
-      unavailableTimeRanges = timeRangeToDateObj(unavailableTimeRanges);
+      unavailableTimeRanges = timeRangeToISO(unavailableTimeRanges, timetableDate);
       court.unavailable.push(unavailableTimeRanges);
     }
 
+    /**
+     * Convert the MSAC html time label from 12 hour format to 24 hour format
+     */
     function twentyfourHourClock(timeLabel, timeRange) {
       // Transform MSAC timetable from 12 hr clock to 24 hr clock
       // bit hacky way to tell the am/pm, maybe a better way?
@@ -86,14 +105,15 @@ function buildCourtsData(content, timetableDate) {
         startMin = startTime[1],
         endTime = timeRange.end.split(':'),
         endHr = parseInt(endTime[0]),
-        endMin = endTime[1];
+        endMin = endTime[1],
+        noonMark = 295;
 
       // console.log(top);
 
-      // If over 12pm
-      if (top >= 295 && startHr !== 12) {
+      // If column's top is over certain px ,it'd be over 12pm
+      if (top >= noonMark && startHr !== 12) {
         timeRange.start = pad(startHr + 12) + ':' + startMin;
-      } else if (top + height >= 295 && startHr !== 12) {
+      } else if (top + height >= noonMark && startHr !== 12) {
         timeRange.end = pad(endHr + 12) + ':' + endMin;
       } else if (startHr === 12) {
         // less than 12pm but hr is 12
@@ -102,24 +122,16 @@ function buildCourtsData(content, timetableDate) {
       return timeRange;
     }
 
-    function timeRangeToDateObj(timeRange) {
-      var date = fecha.format(timetableDate, 'YYYY-MM-DD');
+    /**
+     * Conver the time range object value into Date ISO string
+     */
+    function timeRangeToISO(timeRange, date) {
       timeRange.start = date + 'T' + timeRange.start;
       timeRange.end = date + 'T' + timeRange.end;
       return timeRange;
     }
 
-
-    /**
-     { start: '12:00', end: '6:00' },
-     { start: '7:00', end: '7:30' },
-     { start: '8:00', end: '11:59' }
-     */
-
-
-    console.log(court);
-
-    data.push(court);
+    return court;
   }
 
 
