@@ -2,6 +2,7 @@ const fs = require('fs');
 const cheerio = require('cheerio');
 const phantom = require('phantom');
 const fecha = require('fecha');
+const jsonfile = require('jsonfile');
 
 /**
  * Helper function
@@ -36,28 +37,49 @@ async function phantomOpen(url) {
 /**
  * Request court data
  */
-var data = {};
-var queryDates = [
-  new Date()
-]; 
+var data = {},
+  queryDates = [
+    new Date()
+  ],
+  dataPromise;
 
 /**
  * TODO: 
  * Only request a data fetch to next day data and next 6 days
  * Put data into JSON and save to local disk
  */
+dataPromise = Promise.resolve(
+  queryDates.map(function(dateObj) {
 
-queryDates.forEach( function(queryDate) {
-  queryDate = fecha.format(queryDate, 'YYYY-MM-DD');
-  var queryPrefix = 'https://secure.activecarrot.com/public/facility/iframe_read_only/33/778/',
-  queryUrl = queryPrefix + queryDate;
-  // Get data
-  phantomOpen(queryUrl).then(content => {
-    data[queryDate] = {};
-    data[queryDate]['courts'] = buildCourtsData(content, queryDate);
-    console.log(data);
+    var queryDate = fecha.format(dateObj, 'YYYY-MM-DD'),
+      queryPrefix = 'https://secure.activecarrot.com/public/facility/iframe_read_only/33/778/',
+      queryUrl = queryPrefix + queryDate;
+
+    return {
+      queryDate: queryDate,
+      phantomPromise: phantomOpen(queryUrl)
+    };
+
+  }).reduce(function(sequence, tempObj) {
+    return sequence.then(function() {
+      return tempObj.phantomPromise;
+    }).then(content => {
+      let queryDate = tempObj.queryDate;
+      if (!data[queryDate]) data[queryDate] = {};
+      data[queryDate]['courts'] = buildCourtsData(content, queryDate);
+    });
+  }, Promise.resolve())
+);
+
+
+// After data promise is resolved
+dataPromise.then(() => {
+  console.log('dataQuery resolved');
+  jsonfile.writeFile('./data.json', data, function(err) {
+    console.error(err)
   });
 });
+
 
 
 /**
@@ -76,7 +98,7 @@ function buildCourtsData(content, timetableDate) {
   // parse to find the available time
   for (let i = 1; i < 2; i++) {
     let court = {
-      id: '',
+      id: i,
       unavailable: []
     };
 
