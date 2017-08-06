@@ -9,6 +9,68 @@
   const fecha = require('fecha');
   const jsonfile = require('jsonfile');
 
+
+  /**
+   * Set up empty data object
+   * Set up data promise to be resolved async
+   * Set up dates to query
+   */
+  /**
+   * TODO: 
+   * Only request a data fetch to next day data and next 6 days
+   * Put data into JSON and save to local disk
+   */
+  var data = {},
+    dataPromise,
+    queryDates = [
+      new Date()
+    ],
+
+  /* Async promise to resolve data fetching for dates in query */
+  dataPromise = Promise.resolve(
+    /**
+     * Map dates array to be phantom promises
+     * then it can be chained by the Promise.resolve() later
+     */
+    queryDates.map(function(dateObj) {
+      // Convert the date to be queried in URL
+      var queryDate = fecha.format(dateObj, 'YYYY-MM-DD'),
+        queryPrefix = 'https://secure.activecarrot.com/public/facility/iframe_read_only/33/778/',
+        queryUrl = queryPrefix + queryDate;
+
+      return {
+        queryDate: queryDate,
+        phantomPromise: phantomOpen(queryUrl)
+      };
+
+    }).reduce(function(sequence, tempObj) {
+      /**
+       * Chained promise in sequence then push the built data into data object
+       */
+      return sequence.then(function() {
+        return tempObj.phantomPromise;
+      }).then(content => {
+        let queryDate = tempObj.queryDate;
+        if (!data[queryDate]) data[queryDate] = {};
+        data[queryDate]['courts'] = buildCourtsData(content, queryDate);
+      });
+    }, Promise.resolve())
+  );
+
+
+  // Export module - a promise that would return the data when using .then(data)
+  var getMsacData = dataPromise.then(function(){
+    return data;
+  });
+
+  module.exports = getMsacData;
+
+
+
+  /*=================================
+  =            FUNCTIONS            =
+  =================================*/
+  
   /**
    * Helper function
    */
@@ -37,52 +99,6 @@
 
     await instance.exit();
   };
-
-
-  /**
-   * Request court data
-   */
-  var data = {},
-    queryDates = [
-      new Date()
-    ],
-    dataPromise;
-
-  /**
-   * TODO: 
-   * Only request a data fetch to next day data and next 6 days
-   * Put data into JSON and save to local disk
-   */
-  dataPromise = Promise.resolve(
-    queryDates.map(function(dateObj) {
-
-      var queryDate = fecha.format(dateObj, 'YYYY-MM-DD'),
-        queryPrefix = 'https://secure.activecarrot.com/public/facility/iframe_read_only/33/778/',
-        queryUrl = queryPrefix + queryDate;
-
-      return {
-        queryDate: queryDate,
-        phantomPromise: phantomOpen(queryUrl)
-      };
-
-    }).reduce(function(sequence, tempObj) {
-      return sequence.then(function() {
-        return tempObj.phantomPromise;
-      }).then(content => {
-        let queryDate = tempObj.queryDate;
-        if (!data[queryDate]) data[queryDate] = {};
-        data[queryDate]['courts'] = buildCourtsData(content, queryDate);
-      });
-    }, Promise.resolve())
-  );
-
-
-  // Export a promise that would return the data
-  var getMsacData = dataPromise.then(function(){
-    return data;
-  });
-
-  module.exports = getMsacData;
 
 
   /**
@@ -119,10 +135,9 @@
 
       /**
        * Convert the MSAC html time label from 12 hour format to 24 hour format
+       * Pretty hacky way to deal with it but best way for now
        */
       function twentyfourHourClock(timeLabel, timeRange) {
-        // Transform MSAC timetable from 12 hr clock to 24 hr clock
-        // bit hacky way to tell the am/pm, maybe a better way?
         var top = parseInt($(timeLabel).closest('.fc-event').css('top'), 10),
           height = parseInt($(timeLabel).closest('.fc-event').css('height'), 10),
           startTime = timeRange.start.split(':'),
@@ -132,8 +147,6 @@
           endHr = parseInt(endTime[0]),
           endMin = endTime[1],
           noonMark = 295;
-
-        // console.log(top);
 
         // If column's top is over certain px ,it'd be over 12pm
         if (top >= noonMark && startHr !== 12) {
@@ -155,11 +168,12 @@
         timeRange.end = date + 'T' + timeRange.end;
         return timeRange;
       }
-
       return court;
     }
 
-
+    /**
+     * Split the MSAC time range label string into object with start and end keys
+     */
     function timeRangeSplit(range) {
       if (typeof range === 'string') {
         range = range.replace(/\s/g, '');
@@ -177,7 +191,7 @@
 })();
 
 
-/* JSON
+/* JSON aiming to build
 [
   09-10-2017: {
     courts: [
@@ -197,5 +211,4 @@
     ]
   }
 ]
-
 */
