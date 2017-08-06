@@ -15,54 +15,66 @@
    * Set up data promise to be resolved async
    * Set up dates to query
    */
+
   /**
-   * TODO: 
-   * Only request a data fetch to next day data and next 6 days
-   * Put data into JSON and save to local disk
+   * Get MSAC court data for certain days including start Date
    */
-  var data = {},
-    dataPromise,
-    queryDates = [
-      new Date()
-    ],
+  function getMsacData(startDate, days) {
+    // Set query dates array
+    var queryDates = [];
+    var date = startDate;
+    for (var i = 0; i < days; i++) {
+      queryDates.push(date);
+      // Update date to be next day
+      date = new Date(date.getTime() + (24 * 60 * 60 * 1000));
+    }
 
-  /* Async promise to resolve data fetching for dates in query */
-  dataPromise = Promise.resolve(
-    /**
-     * Map dates array to be phantom promises
-     * then it can be chained by the Promise.resolve() later
-     */
-    queryDates.map(function(dateObj) {
-      // Convert the date to be queried in URL
-      var queryDate = fecha.format(dateObj, 'YYYY-MM-DD'),
-        queryPrefix = 'https://secure.activecarrot.com/public/facility/iframe_read_only/33/778/',
-        queryUrl = queryPrefix + queryDate;
+    return queryMsacData(queryDates);
+  }
 
-      return {
-        queryDate: queryDate,
-        phantomPromise: phantomOpen(queryUrl)
-      };
 
-    }).reduce(function(sequence, tempObj) {
+  function queryMsacData(queryDates) {
+    var dataPromise;
+    var data = {};
+
+    /* Async promise to resolve data fetching for dates in query */
+    dataPromise = Promise.resolve(
       /**
-       * Chained promise in sequence then push the built data into data object
+       * Map dates array to be phantom promises
+       * then it can be chained by the Promise.resolve() later
        */
-      return sequence.then(function() {
-        return tempObj.phantomPromise;
-      }).then(content => {
-        let queryDate = tempObj.queryDate;
-        if (!data[queryDate]) data[queryDate] = {};
-        data[queryDate]['courts'] = buildCourtsData(content, queryDate);
-      });
-    }, Promise.resolve())
-  );
+      queryDates.map(function(dateObj) {
+        // Convert the date to be queried in URL
+        var queryDate = fecha.format(dateObj, 'YYYY-MM-DD'),
+          queryPrefix = 'https://secure.activecarrot.com/public/facility/iframe_read_only/33/778/',
+          queryUrl = queryPrefix + queryDate;
+
+        return {
+          queryDate: queryDate,
+          phantomPromise: phantomOpen(queryUrl)
+        };
+
+      }).reduce(function(sequence, tempObj) {
+        /**
+         * Chained promise in sequence then push the built data into data object
+         */
+        return sequence.then(function() {
+          return tempObj.phantomPromise;
+        }).then(content => {
+          let queryDate = tempObj.queryDate;
+          if (!data[queryDate]) data[queryDate] = {};
+          data[queryDate]['courts'] = buildCourtsData(content, queryDate);
+        });
+      }, Promise.resolve())
+    );
+
+    return dataPromise.then(function() {
+      return data;
+    });
+  }
 
 
-  // Export module - a promise that would return the data when using .then(data)
-  var getMsacData = dataPromise.then(function(){
-    return data;
-  });
-
+  // Export module - a promise that would return the data when using .then(data)s
   module.exports = getMsacData;
 
 
@@ -70,7 +82,7 @@
   /*=================================
   =            FUNCTIONS            =
   =================================*/
-  
+
   /**
    * Helper function
    */
@@ -111,11 +123,11 @@
   function buildCourtsData(content, timetableDate) {
 
     var $ = cheerio.load(content),
-      court_data = {};
+      court_data = [];
 
     // Loop through each column, then find all unavailable time range
     // parse to find the available time
-    for (let i = 1; i < 2; i++) {
+    for (let i = 1; i <= 8; i++) {
       let court = {
         id: i,
         unavailable: []
@@ -133,42 +145,43 @@
         court.unavailable.push(unavailableTimeRanges);
       }
 
-      /**
-       * Convert the MSAC html time label from 12 hour format to 24 hour format
-       * Pretty hacky way to deal with it but best way for now
-       */
-      function twentyfourHourClock(timeLabel, timeRange) {
-        var top = parseInt($(timeLabel).closest('.fc-event').css('top'), 10),
-          height = parseInt($(timeLabel).closest('.fc-event').css('height'), 10),
-          startTime = timeRange.start.split(':'),
-          startHr = parseInt(startTime[0]),
-          startMin = startTime[1],
-          endTime = timeRange.end.split(':'),
-          endHr = parseInt(endTime[0]),
-          endMin = endTime[1],
-          noonMark = 295;
+      court_data.push(court);
+    }
 
-        // If column's top is over certain px ,it'd be over 12pm
-        if (top >= noonMark && startHr !== 12) {
-          timeRange.start = pad(startHr + 12) + ':' + startMin;
-        } else if (top + height >= noonMark && startHr !== 12) {
-          timeRange.end = pad(endHr + 12) + ':' + endMin;
-        } else if (startHr === 12) {
-          // less than 12pm but hr is 12
-          timeRange.start = pad(0) + ':' + startMin;
-        }
-        return timeRange;
-      }
+    /**
+     * Convert the MSAC html time label from 12 hour format to 24 hour format
+     * Pretty hacky way to deal with it but best way for now
+     */
+    function twentyfourHourClock(timeLabel, timeRange) {
+      var top = parseInt($(timeLabel).closest('.fc-event').css('top'), 10),
+        height = parseInt($(timeLabel).closest('.fc-event').css('height'), 10),
+        startTime = timeRange.start.split(':'),
+        startHr = parseInt(startTime[0]),
+        startMin = startTime[1],
+        endTime = timeRange.end.split(':'),
+        endHr = parseInt(endTime[0]),
+        endMin = endTime[1],
+        noonMark = 295;
 
-      /**
-       * Conver the time range object value into Date ISO string
-       */
-      function timeRangeToISO(timeRange, date) {
-        timeRange.start = date + 'T' + timeRange.start;
-        timeRange.end = date + 'T' + timeRange.end;
-        return timeRange;
+      // If column's top is over certain px ,it'd be over 12pm
+      if (top >= noonMark && startHr !== 12) {
+        timeRange.start = pad(startHr + 12) + ':' + startMin;
+      } else if (top + height >= noonMark && startHr !== 12) {
+        timeRange.end = pad(endHr + 12) + ':' + endMin;
+      } else if (startHr === 12) {
+        // less than 12pm but hr is 12
+        timeRange.start = pad(0) + ':' + startMin;
       }
-      return court;
+      return timeRange;
+    }
+
+    /**
+     * Conver the time range object value into Date ISO string
+     */
+    function timeRangeToISO(timeRange, date) {
+      timeRange.start = date + 'T' + timeRange.start;
+      timeRange.end = date + 'T' + timeRange.end;
+      return timeRange;
     }
 
     /**
@@ -186,6 +199,9 @@
         console.warn('parse range time must be string');
       }
     }
+
+    // Return the data
+    return court_data;
   }
 
 })();
