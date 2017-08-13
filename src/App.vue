@@ -5,7 +5,7 @@
       <appHeader></appHeader>
 
       <!-- Timetable -->
-      <courtsTable v-bind:courtsData="courtsData"></courtsTable>
+      <courtsTable v-bind:courtsData="getCourtsData(currentDateIndex)"></courtsTable>
 
     </main>
   </div>
@@ -20,14 +20,24 @@ export default {
   name: 'app',
   data () {
     return {
-      courtsData: getJSON('../data/data.json')
+      data: null,
+      currentDateIndex: 0
     }
   },
   components: {
     'appHeader': appHeader,
     'courtsTable': courtsTable
   },
+  methods: {
+    getCourtsData: function(dateIndex) {
+      return this.data.then(function(data){
+        return data[dateIndex].courts;
+      });
+    }
+  },
   created: function() {
+    var vm = this;
+    vm.data = getJSON('../data/data.json');
   }
 }
 </script>

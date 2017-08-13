@@ -10,9 +10,8 @@ export default {
   props: ['courtsData'],
   created: function() {
     var vm = this;
-
-    vm.courtsData.then(function(courtsData){
-      console.log(courtsData);
+    vm.courtsData.then(function(data){
+      console.log(data);
     });
   }
 }

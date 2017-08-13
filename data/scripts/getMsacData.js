@@ -35,7 +35,7 @@
 
   function queryMsacData(queryDates) {
     var dataPromise;
-    var data = {};
+    var data = [];
 
     /* Async promise to resolve data fetching for dates in query */
     dataPromise = Promise.resolve(
@@ -62,8 +62,10 @@
           return tempObj.phantomPromise;
         }).then(content => {
           let queryDate = tempObj.queryDate;
-          if (!data[queryDate]) data[queryDate] = {};
-          data[queryDate]['courts'] = buildCourtsData(content, queryDate);
+          data.push({
+            date: queryDate,
+            courts: buildCourtsData(content, queryDate)
+          });
         });
       }, Promise.resolve())
     );
