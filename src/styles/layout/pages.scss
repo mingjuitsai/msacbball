@@ -1,0 +1,9 @@
+.app {
+  padding: em(20) 0 em(25);
+}
+
+.main {
+  background-color: #ddd;
+  @include beContainer('regularSmall');
+}
+

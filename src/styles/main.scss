@@ -1,14 +1,25 @@
+
+/**
+ * Common
+ */
 // Global - include to preset breakpoints variables for include medias
 @import "common/variables";
 @import "common/functions";
 @import "common/breakpoints";
-
 // Include media
 @import "../../node_modules/include-media/dist/include-media";
-
+@import "common/mixin";
 @import "common/reset";
+@import "common/base";
 @import "common/typography";
 
-body {
-  
-}
+/**
+ * Modules
+ */
+
+
+/**
+ * Layout
+ */
+@import "layout/header";
+@import "layout/pages";
