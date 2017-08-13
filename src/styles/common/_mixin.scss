@@ -1,0 +1,241 @@
+/**
+ * Responsive font
+ */
+@function linear-interpolation($map) {
+  $keys: map-keys($map);
+  @if (length($keys) != 2) {
+    @error "linear-interpolation() $map must be exactly 2 values";
+  }
+  // The slope
+  $m: (map-get($map, nth($keys, 2)) - map-get($map, nth($keys, 1)))/(nth($keys, 2) - nth($keys,1));
+  
+  // The y-intercept
+  $b: map-get($map, nth($keys, 1)) - $m * nth($keys, 1);
+  
+  // Determine if the sign should be positive or negative
+  $sign: "+";
+  @if ($b < 0) {
+    $sign: "-";
+    $b: abs($b);
+  }
+  
+  @return calc(#{$m*100}vw #{$sign} #{$b});
+}
+
+/// map-sort
+/// Sort map by keys
+/// @author Jake Wilson <jake.e.wilson@gmail.com>
+@function map-sort($map) {
+  $keys: list-sort(map-keys($map));
+  $sortedMap: ();
+  @each $key in $keys {
+    $sortedMap: map-merge($sortedMap, ($key: map-get($map, $key)));
+  }
+  @return $sortedMap;
+}
+
+/// list-sort
+/// Sort a SASS list
+/// @author Jake Wilson <jake.e.wilson@gmail.com>
+@function list-sort($list) {
+  $sortedlist: ();
+  @while length($list) > 0 {
+    $value: nth($list,1);
+    @each $item in $list {
+      @if $item < $value {
+        $value: $item;
+      }
+    }
+    $sortedlist: append($sortedlist, $value, 'space');
+    $list: list-remove($list, index($list, $value));
+  }
+  @return $sortedlist;
+}
+
+/// list-remove
+/// Remove an item from a list
+@function list-remove($list, $index) {
+  $newList: ();
+  @for $i from 1 through length($list) {
+    @if $i != $index {
+      $newList: append($newList, nth($list,$i), 'space');
+    }
+  }
+  @return $newList;
+}
+
+/// poly-fluid-sizing
+///   @include poly-fluid-sizing('font-size', (576px: 22px, 768px: 24px, 992px: 34px));
+/// @author Jake Wilson <jake.e.wilson@gmail.com>
+@mixin poly-fluid-sizing($property, $map) {
+  // Get the number of provided breakpoints
+  $length: length(map-keys($map));
+  
+  // Error if the number of breakpoints is < 2
+  @if ($length < 2) {
+    @error "poly-fluid-sizing() $map requires at least values"
+  }
+
+  // Sort the map by viewport width (key)
+  $map: map-sort($map);
+  $keys: map-keys($map);
+
+  // Minimum size
+  #{$property}: map-get($map, nth($keys,1));
+  
+  // Interpolated size through breakpoints
+  @for $i from 1 through ($length - 1) {
+    @media (min-width:nth($keys,$i)) {
+      $value1: map-get($map, nth($keys,$i));
+      $value2: map-get($map, nth($keys,($i + 1)));
+      // If values are not equal, perform linear interpolation
+      @if ($value1 != $value2) {
+        #{$property}: linear-interpolation((nth($keys,$i): $value1, nth($keys,($i+1)): $value2));
+      } @else {
+        #{$property}: $value1;
+      }
+    }
+  }
+  
+  // Maxmimum size
+  @media (min-width:nth($keys,$length)) {
+    #{$property}: map-get($map, nth($keys,$length));
+  }
+}
+
+/**
+ * Support
+ */
+@mixin if_flexbox() {
+  @supports (display: -webkit-flex) or
+  (display: -moz-flex) or
+  (display: flex) {
+    @content;
+  }
+}
+
+/**
+ * Grid
+ */
+$grid-gutter: em(20px);
+@mixin makeRow($gutter: $grid-gutter) {
+  // Common
+  @include clearfix;
+  margin: 0 -#{$gutter / 2};
+
+  // If flexbox
+  @include if_flexbox {
+    display: flex;
+    flex-flow: row wrap;
+  }
+}
+
+@mixin makeCol($width, $gutter: $grid-gutter) {
+  // Common
+  float: left;
+  width: $width;
+  padding: 0 ($gutter / 2);
+  margin-bottom: 1.2rem;
+  box-sizing: border-box;
+
+  // If flexbox
+  @include if_flexbox {
+    flex: 0 0 $width;
+  }
+}
+
+@mixin beContainer($width: map-fetch($containers, desktop), $side-gutter: 1.1rem, $offset: 0rem)  {
+  @if type-of($width) == "number" {
+    @if unitless($width) {
+      $width: $width * 1px;
+    }
+  } @else if type-of($width) == "string" {
+    $width: map-fetch($containers, $width);
+  } @else {
+    @warn '#{ $width } is an invalid argument.';
+    @return $width;
+  }
+
+  $max-width: rem($width, 16);
+  $marginHalf: (50% - #{$max-width/2});
+
+  padding-right: $side-gutter;
+  padding-left: $side-gutter;
+  max-width: $max-width;
+  
+  // Offset margin
+  @if $offset > 0rem {
+    margin-left: calc(#{$marginHalf} + #{$offset});
+    margin-right: calc(#{$marginHalf} - #{$offset});
+
+    @media screen and (max-width: #{$max-width + $offset + $side-gutter*2}) {
+      margin-right: auto;
+      margin-left: auto;
+    }
+    
+  } @else if $offset < 0rem {
+    $offset: -$offset;
+    margin-left: calc(#{$marginHalf} - #{$offset});
+    margin-right: calc(#{$marginHalf} + #{$offset});
+
+    @media screen and (max-width: #{$max-width + $offset + $side-gutter*2}) {
+      margin-right: auto;
+      margin-left: auto;
+    }
+
+  } @else {
+    margin-right: auto;
+    margin-left: auto;
+  }
+}
+
+@mixin updateCol($width) {
+  // Common
+  width: $width;
+
+  // If flexbox
+  @include if_flexbox {
+    flex: 0 0 $width;
+  }
+}
+
+/**
+ * Layout
+ */
+@mixin center-block() {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+@mixin vhcenter-block-abs() {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+@mixin clearfix {
+  & {
+    *zoom: 1;
+  }
+  &:before,
+  &:after {
+    content: "";
+    display: table;
+    // webkit fix
+    flex-basis: 0;
+    order: 1;
+  }
+  &:after {
+    clear: both;
+  }
+}
+
+/**
+ * Site wide spacing configs
+ */
+@mixin spacing($name) {
+  @if $name == 'main-padding-top' {
+    padding-top: em(60);
+  }
+}

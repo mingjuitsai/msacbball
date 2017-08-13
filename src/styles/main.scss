@@ -1,5 +1,14 @@
+// Global - include to preset breakpoints variables for include medias
+@import "common/variables";
+@import "common/functions";
+@import "common/breakpoints";
+
+// Include media
+@import "../../node_modules/include-media/dist/include-media";
+
 @import "common/reset";
+@import "common/typography";
 
 body {
-  color: red;
+  
 }

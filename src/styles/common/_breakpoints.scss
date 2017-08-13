@@ -1,0 +1,45 @@
+/**
+ * Responsive Breakpoints
+ */
+$breakpoint-base: 16;
+
+// Convert the breakpoints value from px to em
+@function emBreakpoints($breakpoints, $breakpoint-base: $breakpoint-base) {
+  @each $breakpoint-name, $value in $breakpoints {
+    @if (type-of($value) == number ) {
+      @if not unitless($value) {
+        $value: $value / ($value * 0 + 1)
+      } 
+      $value_em: $value/$breakpoint-base * 1em;
+      $breakpoints: map-set($breakpoints, $breakpoint-name, $value_em);
+    }
+  }
+  @return $breakpoints;
+}
+
+// Breakpoints Map, use px and the function below will convert them to em
+$breakpoints_base: (
+  'mobileSmall': 375px,
+  'mobile': 425px,
+  'mobileLarge': 480px,
+  'tabletSmall': 600px,
+  'tabletMedium': 680px,
+  'tablet': 800px,
+  'tabletLarge': 900px,
+  'desktopSmall': 1024px,
+  'desktopMedium': 1200px,
+  'desktop': 1440px,
+  'desktoplarge': 1600px,
+  'landscape': '(orientation: landscape)',
+  'portrait': '(orientation: portrait)',
+  'retina2x': '(-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi)',
+  'retina3x': '(-webkit-min-device-pixel-ratio: 3), (min-resolution: 350dpi)'
+);
+
+// Reformat the breakpoint from px to em, and set as default setting
+$breakpoints: emBreakpoints($breakpoints_base)!default;
+
+// breakpoint function can be used to grab breakpoint
+@function breakpoint($breakpoint_name) {
+  @return map-get($breakpoints, $breakpoint_name);
+}

@@ -1,0 +1,34 @@
+// Base
+$base-unit: 16;
+
+/**
+ * Color
+ */
+
+// $primary-color: $black;
+// $secondary-color: $black;
+// $link-color: $blue;
+$gunmetal: #424242;
+
+/**
+ * Font
+ */
+$font-display: 'Noto Sans', sans-serif, Arial, "Helvetica Neue", Helvetica, sans-serif;
+$font-heading: 'Noto Sans', sans-serif, Arial, "Helvetica Neue", Helvetica, sans-serif;
+$font-body: 'Noto Sans', sans-serif, Arial, "Helvetica Neue", Helvetica, sans-serif;
+
+/**
+ * Easing
+ */
+$easeOutQuint : cubic-bezier(0.23, 1, 0.32, 1);
+$easeOutSine : cubic-bezier(0.39, 0.575, 0.565, 1);
+$easeInSine   : cubic-bezier(0.470, 0.000, 0.745, 0.715);
+
+/**
+ * Container
+ */
+$containers: (
+  regularSmall: 840px,
+  regular: 938px,
+  wide: 1360px
+);

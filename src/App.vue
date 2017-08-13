@@ -1,7 +1,9 @@
 <template>
   <div id="app">
-    
+    <!-- Header -->
     <appHeader></appHeader>
+
+    
     
   </div>
 </template>
