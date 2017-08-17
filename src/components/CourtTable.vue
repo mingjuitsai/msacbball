@@ -14,13 +14,15 @@
 
   .time-slot{
     min-height: 50px;
-    border: 1px solid #000;
+    // margin: 0.5px 0.5px 1px;
     &--available{
-      background-color: teal;
+      background-color: #1de9b6;
+      border: 0.5px solid #29ad8c;
     }
 
     &--unavailable{
-      background-color: #ddd;
+      background-color: #f5f5f5;
+      border: 0.5px solid #e0e0e0;
     }
   }
 </style>
