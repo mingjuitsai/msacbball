@@ -29,6 +29,8 @@
 
 <script>
 
+import moment from 'moment';
+
 export default {
   name: 'courtsTable',
   props: ['courtsData'],
@@ -54,6 +56,8 @@ export default {
       console.table(data[0].unavailable);
       vm.courts = data;
     });
+
+    console.log(moment());
   }
 }
 </script>
