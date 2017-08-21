@@ -150,10 +150,15 @@
       /* Insert available time */
       court.available = findAvailable(court);
 
+      /* Push court data */
       court_data.push(court);
     }
 
-
+    /**
+     * Find available time by connecting end and start time of unavailable time
+     * @param  {object} court object contains unavailable array
+     * @return {array}       [an array contains unavailable timestamp]
+     */
     function findAvailable(court) {
       var available = [];
       court.unavailable.forEach( function(value, index, array) {
