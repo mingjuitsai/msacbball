@@ -1,11 +1,17 @@
 <template>
   <div class="app">
     <main class="main">
+      
       <!-- Header -->
       <appHeader></appHeader>
 
-      <!-- Timetable -->
-      <courtsTable v-bind:date="getCurrentDate(currentDateIndex)" v-bind:courtsData="getCourtsData(currentDateIndex)"></courtsTable>
+      <!-- Courts timetable -->
+      <div class="courtsTimetable">
+        <!-- Timerow -->
+        <timeRow></timeRow>
+        <!-- Timetable -->
+        <courtsTable v-bind:date="getCurrentDate(currentDateIndex)" v-bind:courtsData="getCourtsData(currentDateIndex)"></courtsTable>
+      </div>
 
     </main>
   </div>
@@ -13,6 +19,7 @@
 
 <script>
 import appHeader from './components/Header.vue';
+import timeRow from './components/timeRow.vue';
 import courtsTable from './components/CourtTable.vue';
 import { getJSON } from './scripts/modules/get.js';
 
@@ -26,7 +33,8 @@ export default {
   },
   components: {
     'appHeader': appHeader,
-    'courtsTable': courtsTable
+    'courtsTable': courtsTable,
+    'timeRow': timeRow
   },
   methods: {
     getCourtsData: function(dateIndex) {

@@ -1,7 +1,7 @@
 <template>
   <div class="courtsTable">
     <section class="court" v-for="court in courts" v-bind:key="court.id">
-      <aside class="time-slot" v-bind:class="isAvailable(getTimeslotTimeStamp(timeslot)) ? 'time-slot--available' : 'time-slot--unavailable'" v-for="timeslot in timeslotLength"></aside>
+      <aside class="time-slot" v-for="timeslot in timeslotLength"></aside>
     </section>
   </div>
 </template>

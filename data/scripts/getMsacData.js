@@ -129,13 +129,13 @@
 
     // Loop through each column, then find all unavailable time range
     // parse to find the available time
-    for (let i = 1; i <= 8; i++) {
+    for (let i = 0; i < 8; i++) {
       let court = {
         id: i,
         unavailable: []
       };
 
-      let column = 'booking_calendar' + (i === 1 ? '' : i),
+      let column = 'booking_calendar' + ((i + 1) === 1 ? '' : (i + 1)),
         timeLabels = $(`#${column} .fc-event-time`).get();
 
       // Need to do this backward cuz of how MSAC html structured
@@ -147,8 +147,26 @@
         court.unavailable.push(unavailableTimeRanges);
       }
 
+      /* Insert available time */
+      court.available = findAvailable(court);
+
       court_data.push(court);
     }
+
+
+    function findAvailable(court) {
+      var available = [];
+      court.unavailable.forEach( function(value, index, array) {
+        if(!array[index + 1]) { return false; }
+        available.push({
+          start: value.end,
+          end: array[index + 1].start
+        });
+      });
+
+      return available;
+    }
+
 
     /**
      * Convert the MSAC html time label from 12 hour format to 24 hour format
