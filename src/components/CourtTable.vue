@@ -1,13 +1,15 @@
 <template>
   <div class="courtsTable">
-    <section class="court" v-for="court in courts" v-bind:key="court.id">
-      <aside class="time-slot" v-for="timeslot in timeslotLength"></aside>
+    <section class="timeRow" v-for="timeslot in timeslotLength+1">
+      <time> {{ getCourtTime(timeslot) }} </time>
     </section>
   </div>
 </template>
 
 
 <script>
+const fecha = require('fecha');
+
 export default {
   name: 'courtsTable',
   props: [
@@ -17,16 +19,17 @@ export default {
   data () {
     return {
       courts: null,
-      timeslotLength: 56, // ((12 - 6) + (20 - 12)) * 2 * 2
+      timeslotLength: 56, // = ((12 - 6) + (20 - 12)) * 2 * 2
+      courtStartTime: new Date(1988, 9, 9, 6, 0, 0),
+      courtEndTime: new Date(1988, 9, 9, 20, 0, 0)
     }
   },
   methods: {
-    getTimeslotTimeStamp: function(timeslot) {
-      
+    getCourtTime: function(timeslot) {
+      // Every timeslot is 15 minutes
+      var vm = this;
+      return fecha.format( new Date(vm.courtStartTime.getTime() + (timeslot - 1)*15*60*1000), 'hh:mm A');
     },
-    isAvailable: function(timestamp) {
-      return Math.random() > 0.5;
-    }
   },
   created: function() {
     var vm = this;
