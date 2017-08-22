@@ -6,6 +6,10 @@
     &:nth-child(even) {
       .timeRow__time {
         visibility: hidden;
+        font-size: 12px;
+        opacity: .3;
+        text-align: right;
+        padding-right: 4px;
       }
     }
 
@@ -26,7 +30,7 @@
       }
 
       .timeslot {
-        min-height: 30px;
+        min-height: 40px;
         width: percentage(1 / 8);
         display: inline-block;
         background-color: #f5f5f5;
