@@ -9,7 +9,7 @@
         </time>
       </h4>
 
-      <ul class="courtSlots">
+      <ul class="timeRow__courtSlots">
         <li class="timeslot" v-bind:class="[isAvailable(court.id, timeslot) ? 'available' : 'unavailable']" v-for="court in courts"></li>
       </ul>
     </section>

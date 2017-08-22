@@ -1,16 +1,42 @@
-.court {
-  
-}
+.courtsTimeTable {
+  .timeRow {
+    @include clearfix;
+    
 
-.timeslot {
-  min-height: 50px;
-  width: percentage(1 / 8);
-  display: inline-block;
-  background-color: #f5f5f5;
-  border: 0.5px solid #e0e0e0;
+    &:nth-child(even) {
+      .timeRow__time {
+        visibility: hidden;
+      }
+    }
 
-  &.available {
-    background-color: #1de9b6;
-    border: 0.5px solid #29ad8c;
+    &__time {
+      font-size: em(15);
+      float: left;
+      width: 12%;
+      transform: translateY(-50%);
+    }
+
+    &__courtSlots {
+      float: left;
+      width: 88%;
+
+      > li {
+        float: left;
+        display: block;
+      }
+
+      .timeslot {
+        min-height: 30px;
+        width: percentage(1 / 8);
+        display: inline-block;
+        background-color: #f5f5f5;
+        border: 0.5px solid #e0e0e0;
+
+        &.available {
+          background-color: #1de9b6;
+          border: 0.5px solid #29ad8c;
+        }
+      }
+    }
   }
 }
