@@ -142,7 +142,9 @@
       for (let s = timeLabels.length - 1; s >= 0; s--) {
         let timeLabel = timeLabels[s];
         let timeLabelText = $(timeLabels[s]).text();
+        console.log(timeLabelText);
         let unavailableTimeRanges = twentyfourHourClock(timeLabel, timeRangeSplit(timeLabelText));
+        console.log(unavailableTimeRanges);
         unavailableTimeRanges = timeRangeToISO(unavailableTimeRanges, timetableDate);
         court.unavailable.push(unavailableTimeRanges);
       }
@@ -188,15 +190,28 @@
         endMin = endTime[1],
         noonMark = 295;
 
+      console.log(top, height, noonMark, startHr);
       // If column's top is over certain px ,it'd be over 12pm
       if (top >= noonMark && startHr !== 12) {
         timeRange.start = pad(startHr + 12) + ':' + startMin;
-      } else if (top + height >= noonMark && startHr !== 12) {
+      }
+      if (top < noonMark && startHr !== 12) {
+        timeRange.start = pad(startHr) + ':' + startMin;
+      }
+
+      // If column's top is less than certain px ,it'd be less than 12pm
+      if (top + height >= noonMark && endHr !== 12) {
         timeRange.end = pad(endHr + 12) + ':' + endMin;
-      } else if (startHr === 12) {
-        // less than 12pm but hr is 12
+      }
+      if (top + height < noonMark && endHr !== 12) {
+        timeRange.end = pad(endHr) + ':' + endMin;
+      }
+
+      // less than 12pm but hr is 12 and before noon
+      if (startHr === 12 && top < noonMark) {
         timeRange.start = pad(0) + ':' + startMin;
       }
+
       return timeRange;
     }
 

@@ -10,7 +10,7 @@
       </h4>
 
       <ul class="courtSlots">
-        <li class="timeslot" v-for="court in courts"></li>
+        <li class="timeslot" v-bind:class="[isAvailable(court.id, timeslot) ? 'available' : 'unavailable']" v-for="court in courts"></li>
       </ul>
     </section>
 
@@ -29,39 +29,92 @@ export default {
   ],
   data () {
     return {
+      currentDate: null,
       courts: null,
       timeslotLength: 56, // = ((12 - 6) + (20 - 12)) * 2 * 2
-      courtStartTime: new Date(1988, 9, 9, 6, 0, 0),
-      courtEndTime: new Date(1988, 9, 9, 20, 0, 0)
+    }
+  },
+  computed: {
+    courtStartTime: function () {      
+      var vm = this;
+      if(vm.currentDate) {
+        return new Date(vm.currentDate + 'T' + '06:00');
+      }      
+    },
+    courtEndTime: function () {
+      var vm = this;
+      if(vm.currentDate) {
+        return new Date(vm.currentDate + 'T' + '20:00');
+      }
     }
   },
   methods: {
-    getSlotTime: function(timeslot) {
+    getSlotTime: function(timeslot, timeFormat) {
       // Don't render the time if it's even
       // else caculate next time slot, 15 minutes after, then return formatted time
+      timeFormat = timeFormat ? timeFormat : 'hh:mm a';
       var vm = this,
       result,
       figureSlotTime = function(steps) {
         steps = steps ? steps : 0;
-        return new Date(vm.courtStartTime.getTime() + (timeslot - 1 + steps)*15*60*1000);
+        if(vm.courtStartTime) {
+          return new Date(vm.courtStartTime.getTime() + (timeslot - 1 + steps)*15*60*1000);
+        } else {
+          return false;
+        }
       };
       if( timeslot === vm.timeslotLength) {
         result = figureSlotTime(1);
-      } else if( timeslot % 2 === 0 ) {
+      } /*else if( timeslot % 2 === 0) {
         return false;
-      } else {
+      } */else {
         result = figureSlotTime();
       }
 
       // Return the formatted time
-      return fecha.format( result, 'hh:mm a');
+      if(result) {
+        if(timeFormat === 'raw') {
+          return result;
+        } else {
+          return fecha.format( result, timeFormat);
+        }
+      } else {
+        return false;
+      }      
     },
+
+    isAvailable: function(courtID, timeslot) {
+      var vm = this, result,
+      timeslotStart = vm.getSlotTime(timeslot, 'raw').getTime(),
+      timeslotEnd = timeslotStart + 15*60*1000;
+
+      // console.log(timeslotStart, timeslotEnd);
+      // console.log(new Date(timeslotStart), new Date(timeslotEnd));
+
+      result = vm.courts[courtID].available.some( function(available) {
+        // console.log(new Date( available.start ).getTime(), new Date( available.end ).getTime());
+        // console.log(new Date( available.start ), new Date( available.end ));
+        var availableStart = new Date( available.start ).getTime(),
+        availableEnd = new Date( available.end ).getTime();
+
+        if( timeslotStart >= availableStart && timeslotEnd <= availableEnd ) {
+          return true;
+        } else {
+          return false;
+        }
+      });
+
+      return result;
+    }
   },
   created: function() {
     var vm = this;
     vm.courtsData.then(function(data){
-      console.table(data[0].unavailable);
+      console.table(data[0].available);
       vm.courts = data;
+    });
+    vm.date.then(date => {
+      vm.currentDate = date;
     });
   }
 }

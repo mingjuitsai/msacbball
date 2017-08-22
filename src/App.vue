@@ -39,8 +39,8 @@ export default {
       });
     },
     getCurrentDate: function(dateIndex) {
-      return this.data.then(function(data){
-        return data[dateIndex].date;
+      return this.data.then(function(json){
+        return json[dateIndex].date;
       });
     }
   },
