@@ -8,7 +8,7 @@
       <!-- Courts timetable -->
       <div class="courtsTimetable">
         <!-- Timetable -->
-        <courtsTable v-bind:date="getCurrentDate(currentDateIndex)" v-bind:courtsData="getCourtsData(currentDateIndex)"></courtsTable>
+        <courtsTimeTable v-bind:date="getCurrentDate(currentDateIndex)" v-bind:courtsData="getCourtsData(currentDateIndex)"></courtsTimeTable>
       </div>
 
     </main>
@@ -17,7 +17,7 @@
 
 <script>
 import appHeader from './components/Header.vue';
-import courtsTable from './components/CourtTable.vue';
+import courtsTimeTable from './components/CourtsTimeTable.vue';
 import { getJSON } from './scripts/modules/get.js';
 
 export default {
@@ -30,7 +30,7 @@ export default {
   },
   components: {
     'appHeader': appHeader,
-    'courtsTable': courtsTable,
+    'courtsTimeTable': courtsTimeTable,
   },
   methods: {
     getCourtsData: function(dateIndex) {

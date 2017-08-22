@@ -2,10 +2,13 @@
   <div class="courtsTimeTable">
 
     <!-- Time Row -->
-    <section class="timeRow" v-bind:class="[getSlotTime(timeslot) ? 'timeRow--label' : 'timeRow--marker' ]" v-for="timeslot in timeslotLength">
-      <h4 class="timeRow__time" v-if="getSlotTime(timeslot)">
+    <section class="timeRow" v-for="timeslot in timeslotLength">
+      <h4 class="timeRow__time">
         <time>
-          {{ getSlotTime(timeslot) }}
+          {{ formatTime(getSlotTime(timeslot), 'hh:mm a') }}
+        </time>
+        <time v-if="timeslot === timeslotLength">
+          {{ formatTime(getSlotTime(timeslot, 1), 'hh:mm a') }}
         </time>
       </h4>
 
@@ -22,7 +25,7 @@
 const fecha = require('fecha');
 
 export default {
-  name: 'courtsTable',
+  name: 'courtsTimeTable',
   props: [
     'courtsData',
     'date'
@@ -49,51 +52,37 @@ export default {
     }
   },
   methods: {
-    getSlotTime: function(timeslot, timeFormat) {
-      // Don't render the time if it's even
-      // else caculate next time slot, 15 minutes after, then return formatted time
-      timeFormat = timeFormat ? timeFormat : 'hh:mm a';
-      var vm = this,
-      result,
-      figureSlotTime = function(steps) {
-        steps = steps ? steps : 0;
-        if(vm.courtStartTime) {
-          return new Date(vm.courtStartTime.getTime() + (timeslot - 1 + steps)*15*60*1000);
-        } else {
-          return false;
-        }
-      };
-      if( timeslot === vm.timeslotLength) {
-        result = figureSlotTime(1);
-      } /*else if( timeslot % 2 === 0) {
-        return false;
-      } */else {
-        result = figureSlotTime();
-      }
+    getSlotTime: function(timeslot, offset) {
+      // Caculate next time slot, 15 minutes after, then return formatted time
+      var vm = this;
+      offset = offset ? offset : 0;
 
-      // Return the formatted time
-      if(result) {
-        if(timeFormat === 'raw') {
-          return result;
-        } else {
-          return fecha.format( result, timeFormat);
-        }
+      if(vm.courtStartTime) {
+        return new Date(vm.courtStartTime.getTime() + (timeslot - 1 + offset)*15*60*1000);
       } else {
         return false;
-      }      
+      }
+    },
+
+    formatTime: function(dateObject, format) {
+      format = format ? format : 'dddd MMMM Do, YYYY';
+      if(typeof dateObject.getMonth === 'function') {
+        return fecha.format(dateObject, format);
+      }
     },
 
     isAvailable: function(courtID, timeslot) {
       var vm = this, result,
-      timeslotStart = vm.getSlotTime(timeslot, 'raw').getTime(),
+      timeslotStart = vm.getSlotTime(timeslot).getTime(),
       timeslotEnd = timeslotStart + 15*60*1000;
 
       // console.log(timeslotStart, timeslotEnd);
       // console.log(new Date(timeslotStart), new Date(timeslotEnd));
+      // console.log(new Date( available.start ).getTime(), new Date( available.end ).getTime());
+      // console.log(new Date( available.start ), new Date( available.end ));
 
       result = vm.courts[courtID].available.some( function(available) {
-        // console.log(new Date( available.start ).getTime(), new Date( available.end ).getTime());
-        // console.log(new Date( available.start ), new Date( available.end ));
+        
         var availableStart = new Date( available.start ).getTime(),
         availableEnd = new Date( available.end ).getTime();
 
@@ -107,6 +96,7 @@ export default {
       return result;
     }
   },
+
   created: function() {
     var vm = this;
     vm.courtsData.then(function(data){
