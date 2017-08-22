@@ -1,8 +1,19 @@
 <template>
-  <div class="courtsTable">
-    <section class="timeRow" v-for="timeslot in timeslotLength+1">
-      <time> {{ getCourtTime(timeslot) }} </time>
+  <div class="courtsTimeTable">
+
+    <!-- Time Row -->
+    <section class="timeRow" v-bind:class="[getSlotTime(timeslot) ? 'timeRow--label' : 'timeRow--marker' ]" v-for="timeslot in timeslotLength">
+      <h4 class="timeRow__time" v-if="getSlotTime(timeslot)">
+        <time>
+          {{ getSlotTime(timeslot) }}
+        </time>
+      </h4>
+
+      <ul class="courtSlots">
+        <li class="timeslot" v-for="court in courts"></li>
+      </ul>
     </section>
+
   </div>
 </template>
 
@@ -25,10 +36,25 @@ export default {
     }
   },
   methods: {
-    getCourtTime: function(timeslot) {
-      // Every timeslot is 15 minutes
-      var vm = this;
-      return fecha.format( new Date(vm.courtStartTime.getTime() + (timeslot - 1)*15*60*1000), 'hh:mm A');
+    getSlotTime: function(timeslot) {
+      // Don't render the time if it's even
+      // else caculate next time slot, 15 minutes after, then return formatted time
+      var vm = this,
+      result,
+      figureSlotTime = function(steps) {
+        steps = steps ? steps : 0;
+        return new Date(vm.courtStartTime.getTime() + (timeslot - 1 + steps)*15*60*1000);
+      };
+      if( timeslot === vm.timeslotLength) {
+        result = figureSlotTime(1);
+      } else if( timeslot % 2 === 0 ) {
+        return false;
+      } else {
+        result = figureSlotTime();
+      }
+
+      // Return the formatted time
+      return fecha.format( result, 'hh:mm a');
     },
   },
   created: function() {
