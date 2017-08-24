@@ -4,20 +4,21 @@
     <!-- Time Row -->
     <section class="timeRow" v-for="timeslot in timeslotLength">
       <!-- 
-        TODO: Optimise the logcs here, seems too busy, can we simplify this? 
-        and there is a bug that the last row bottom time not showing
+        TODO:Normal: Try alternative design / play with design
       -->
-      <h4 class="timeRow__time">
-        <time>
-          {{ formatTime(getSlotTime(timeslot), 'hh:mm a') }}
+      <h4 class="timeRow__marker">
+        <time v-if="timeslot % 2 === 1">
+          {{ formatTime(getSlotTime(timeslot).start, 'hh:mm a') }}
         </time>
+        <mark v-if="timeslot % 2 === 0">
+          {{ formatTime(getSlotTime(timeslot).start, 'hh:mm a') }}
+        </mark>
         <time v-if="timeslot === timeslotLength">
-          {{ formatTime(getSlotTime(timeslot, 1), 'hh:mm a') }}
+          {{ formatTime(getSlotTime(timeslot, 1).start, 'hh:mm a') }}
         </time>
       </h4>
 
       <ul class="timeRow__courtSlots">
-        <!-- TODO: Optimise the logcs here, seems too busy, can we simplify this? -->
         <li class="timeslot" v-bind:class="[isAvailable(court.id, timeslot) ? 'available' : 'unavailable']" v-for="court in courts"></li>
       </ul>
     </section>
@@ -58,12 +59,17 @@ export default {
   },
   methods: {
     getSlotTime: function(timeslot, offset) {
-      // Caculate next time slot, 15 minutes after, then return formatted time
       var vm = this;
       offset = offset ? offset : 0;
-
+      // Caculate next time slot, 15 minutes after, then return formatted time
       if(vm.courtStartTime) {
-        return new Date(vm.courtStartTime.getTime() + (timeslot - 1 + offset)*15*60*1000);
+        var slotTimeStart = new Date(vm.courtStartTime.getTime() + (timeslot - 1 + offset)*15*60*1000),
+        slotTimeEnd = new Date(slotTimeStart + 15*60*1000);
+
+        return {
+          start: slotTimeStart,
+          end: slotTimeEnd
+        };
       } else {
         return false;
       }
@@ -72,7 +78,7 @@ export default {
     /* TODO: Can we add this to the global scope, feels like it'd get used a lot */
     formatTime: function(dateObject, format) {
       format = format ? format : 'dddd MMMM Do, YYYY';
-      if(typeof dateObject.getMonth === 'function') {
+      if(dateObject && typeof dateObject.getMonth === 'function') {
         return fecha.format(dateObject, format);
       }
     },
@@ -81,8 +87,9 @@ export default {
 
       /* TODO: Seems a bit busy, simpler ?? */
       var vm = this, result,
-      timeslotStart = vm.getSlotTime(timeslot).getTime(),
-      timeslotEnd = timeslotStart + 15*60*1000;
+      slotTime = vm.getSlotTime(timeslot),
+      timeslotStart = slotTime.start.getTime(),
+      timeslotEnd = slotTime.end.getTime();
 
       // console.log(timeslotStart, timeslotEnd);
       // console.log(new Date(timeslotStart), new Date(timeslotEnd));
