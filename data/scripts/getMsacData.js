@@ -136,17 +136,20 @@
       };
 
       let column = 'booking_calendar' + ((i + 1) === 1 ? '' : (i + 1)),
-        timeLabels = $(`#${column} .fc-event-time`).get();
+        timeLabels = $(`#${column} .fc-event-time`);
+
+      console.log('first: ' + $(timeLabels[0]).text(), 'second: ' + $(timeLabels[1]).text());
 
       // Need to do this backward cuz of how MSAC html structured
       for (let s = timeLabels.length - 1; s >= 0; s--) {
         let timeLabel = timeLabels[s];
         let timeLabelText = $(timeLabels[s]).text();
-        console.log(timeLabelText);
+        // console.log(timeLabelText);
         let unavailableTimeRanges = twentyfourHourClock(timeLabel, timeRangeSplit(timeLabelText));
-        console.log(unavailableTimeRanges);
+        // console.log(unavailableTimeRanges);
         unavailableTimeRanges = timeRangeToISO(unavailableTimeRanges, timetableDate);
         court.unavailable.push(unavailableTimeRanges);
+        court.unavailable = sortTimeRange(court.unavailable);
       }
 
       /* Insert available time */
@@ -154,6 +157,20 @@
 
       /* Push court data */
       court_data.push(court);
+    }
+
+    /**
+     * Sort time range
+     * because MASC HTML is irregular, time range object needs to be sorted
+     */
+    function sortTimeRange(timeRanges) {
+      if(Array.isArray(timeRanges)) {
+        return timeRanges.sort(function(timeRangeA, timeRangeB){
+          return new Date(timeRangeA.start).getTime() - new Date(timeRangeB.start);
+        });
+      } else {
+        console.warn('Time range must be array to be sorted!');
+      }
     }
 
     /**
@@ -190,7 +207,7 @@
         endMin = endTime[1],
         noonMark = 295;
 
-      console.log(top, height, noonMark, startHr);
+      // console.log(top, height, noonMark, startHr);
       // If column's top is over certain px ,it'd be over 12pm
       if (top >= noonMark && startHr !== 12) {
         timeRange.start = pad(startHr + 12) + ':' + startMin;
