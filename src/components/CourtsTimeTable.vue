@@ -19,7 +19,7 @@
       </h4>
 
       <ul class="timeRow__courtSlots">
-        <li class="timeslot" v-bind:class="[isAvailable(court.id, timeslot) ? 'available' : 'unavailable']" v-for="court in courts"></li>
+        <li :data-timeslot="getSlotTime(timeslot).end" class="timeslot" v-bind:class="[isAvailable(court.id, timeslot) ? 'available' : 'unavailable']" v-for="court in courts"></li>
       </ul>
     </section>
 
@@ -28,7 +28,6 @@
 
 
 <script>
-const fecha = require('fecha');
 
 export default {
   name: 'courtsTimeTable',
@@ -58,13 +57,14 @@ export default {
     }
   },
   methods: {
+    // Get the time range object for timeslot with timeslot id
     getSlotTime: function(timeslot, offset) {
       var vm = this;
       offset = offset ? offset : 0;
       // Caculate next time slot, 15 minutes after, then return formatted time
       if(vm.courtStartTime) {
         var slotTimeStart = new Date(vm.courtStartTime.getTime() + (timeslot - 1 + offset)*15*60*1000),
-        slotTimeEnd = new Date(slotTimeStart + 15*60*1000);
+        slotTimeEnd = new Date(slotTimeStart.getTime() + 15*60*1000);
 
         return {
           start: slotTimeStart,
@@ -75,18 +75,9 @@ export default {
       }
     },
 
-    /* TODO: Can we add this to the global scope, feels like it'd get used a lot */
-    formatTime: function(dateObject, format) {
-      format = format ? format : 'dddd MMMM Do, YYYY';
-      if(dateObject && typeof dateObject.getMonth === 'function') {
-        return fecha.format(dateObject, format);
-      }
-    },
-
     isAvailable: function(courtID, timeslot) {
-
       /* TODO: Seems a bit busy, simpler ?? */
-      var vm = this, result,
+      var vm = this, result = false,
       slotTime = vm.getSlotTime(timeslot),
       timeslotStart = slotTime.start.getTime(),
       timeslotEnd = slotTime.end.getTime();
@@ -96,18 +87,21 @@ export default {
       // console.log(new Date( available.start ).getTime(), new Date( available.end ).getTime());
       // console.log(new Date( available.start ), new Date( available.end ));
 
-      result = vm.courts[courtID].available.some( function(available) {
-        
+      vm.courts[courtID].available.forEach( function(available) {
+
         var availableStart = new Date( available.start ).getTime(),
         availableEnd = new Date( available.end ).getTime();
 
         if( timeslotStart >= availableStart && timeslotEnd <= availableEnd ) {
-          return true;
+          result = true;
+          // console.log(slotTime.end, available.end);
+          // console.log(result);
         } else {
-          return false;
+          // console.log(slotTime.end, available.end);
+          // console.log(result);
         }
       });
-
+      
       return result;
     }
   },
