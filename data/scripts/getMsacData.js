@@ -138,10 +138,9 @@
       let column = 'booking_calendar' + ((i + 1) === 1 ? '' : (i + 1)),
         timeLabels = $(`#${column} .fc-event-time`);
 
-      console.log('first: ' + $(timeLabels[0]).text(), 'second: ' + $(timeLabels[1]).text());
-
-      // Need to do this backward cuz of how MSAC html structured
-      for (let s = timeLabels.length - 1; s >= 0; s--) {
+      // Loop through unavailable time labels scraped in html
+      // the order doesn't matter since we will be sorting the final array by timestamp later
+      for (let s = 0; s < timeLabels.length; s++) {
         let timeLabel = timeLabels[s];
         let timeLabelText = $(timeLabels[s]).text();
         // console.log(timeLabelText);
@@ -180,13 +179,16 @@
      */
     function findAvailable(court) {
       var available = [];
-      court.unavailable.forEach( function(value, index, array) {
-        if(!array[index + 1]) { return false; }
-        available.push({
-          start: value.end,
-          end: array[index + 1].start
+
+      if(court.unavailable.length > 1 ) {
+        court.unavailable.forEach( function(value, index, array) {
+          if(!array[index + 1]) { return false; }
+          available.push({
+            start: value.end,
+            end: array[index + 1].start
+          });
         });
-      });
+      }
 
       return available;
     }
