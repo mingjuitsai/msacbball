@@ -9,7 +9,7 @@ Vue.mixin({
   data: function() {
     return {
       currentDateIndex: 0,
-      masterData: getJSON('../data/data.json'),
+      masterData: getJSON('data/data.json'),
       masterDataJSON: null
     }
   },
