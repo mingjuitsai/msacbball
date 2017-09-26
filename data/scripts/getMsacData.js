@@ -49,6 +49,8 @@
           queryPrefix = 'https://secure.activecarrot.com/public/facility/iframe_read_only/33/778/',
           queryUrl = queryPrefix + queryDate;
 
+          console.log(queryUrl);
+
         return {
           queryDate: queryDate,
           phantomPromise: phantomOpen(queryUrl)
@@ -101,11 +103,12 @@
     const instance = await phantom.create();
     const page = await instance.createPage();
     const status = await page.open(url);
-    console.log(status);
 
     if (status === 'success') {
+
       const content = await page.property('content');
       await instance.exit();
+
       return content;
     } else {
       console.warn('Phantom opened url but something went wrong.');
@@ -138,6 +141,12 @@
       let column = 'booking_calendar' + ((i + 1) === 1 ? '' : (i + 1)),
         timeLabels = $(`#${column} .fc-event-time`);
 
+
+      if(!timeLabels.length) {
+        console.log(timetableDate);
+      }
+
+
       // Loop through unavailable time labels scraped in html
       // the order doesn't matter since we will be sorting the final array by timestamp later
       for (let s = 0; s < timeLabels.length; s++) {
@@ -145,11 +154,13 @@
         let timeLabelText = $(timeLabels[s]).text();
         // console.log(timeLabelText);
         let unavailableTimeRanges = twentyfourHourClock(timeLabel, timeRangeSplit(timeLabelText));
-        // console.log(unavailableTimeRanges);
         unavailableTimeRanges = timeRangeToISO(unavailableTimeRanges, timetableDate);
+        // console.log(unavailableTimeRanges);
         court.unavailable.push(unavailableTimeRanges);
         court.unavailable = sortTimeRange(court.unavailable);
       }
+
+
 
       /* Insert available time */
       court.available = findAvailable(court);

@@ -1,6 +1,6 @@
 <template>
   <div class="courtsTimeTable">
-
+  
     <!-- Time Row -->
     <section class="timeRow" v-for="timeslot in timeslotLength">
       <!-- 
@@ -19,7 +19,7 @@
       </h4>
 
       <ul class="timeRow__courtSlots">
-        <li :data-timeslot="getSlotTime(timeslot).end" class="timeslot" v-bind:class="[isAvailable(court.id, timeslot) ? 'available' : 'unavailable']" v-for="court in courts"></li>
+        <li class="timeslot" v-bind:class="[isAvailable(court.id, timeslot) ? 'available' : 'unavailable']" v-for="court in courtsData"></li>
       </ul>
     </section>
 
@@ -37,7 +37,6 @@ export default {
   ],
   data () {
     return {
-      currentDate: null,
       courts: null,
       timeslotLength: 56, // = ((12 - 6) + (20 - 12)) * 2 * 2
     }
@@ -45,14 +44,14 @@ export default {
   computed: {
     courtStartTime: function () {      
       var vm = this;
-      if(vm.currentDate) {
-        return new Date(vm.currentDate + 'T' + '06:00');
+      if(vm.date) {
+        return new Date(vm.date + 'T' + '06:00');
       }      
     },
     courtEndTime: function () {
       var vm = this;
-      if(vm.currentDate) {
-        return new Date(vm.currentDate + 'T' + '20:00');
+      if(vm.date) {
+        return new Date(vm.date + 'T' + '20:00');
       }
     }
   },
@@ -87,7 +86,7 @@ export default {
       // console.log(new Date( available.start ).getTime(), new Date( available.end ).getTime());
       // console.log(new Date( available.start ), new Date( available.end ));
 
-      vm.courts[courtID].available.forEach( function(available) {
+      vm.courtsData[courtID].available.forEach( function(available) {
 
         var availableStart = new Date( available.start ).getTime(),
         availableEnd = new Date( available.end ).getTime();
@@ -101,20 +100,8 @@ export default {
           // console.log(result);
         }
       });
-      
       return result;
     }
-  },
-
-  created: function() {
-    var vm = this;
-    vm.courtsData.then(function(data){
-      console.table(data[0].available);
-      vm.courts = data;
-    });
-    vm.date.then(date => {
-      vm.currentDate = date;
-    });
   }
 }
 </script>

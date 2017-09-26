@@ -3,12 +3,13 @@
     <main class="main">
       
       <!-- Header -->
-      <appHeader></appHeader>
+      <appHeader :date-index.sync="currentDateIndex"></appHeader>
 
       <!-- Courts timetable -->
       <div class="courtsTimetable">
+      
         <!-- Timetable -->
-        <courtsTimeTable v-bind:date="getCurrentDate(currentDateIndex)" v-bind:courtsData="getCourtsData(currentDateIndex)"></courtsTimeTable>
+        <courtsTimeTable :date="currentDate" :courts-data="currentCourtsData"></courtsTimeTable>
       </div>
 
     </main>
@@ -24,33 +25,23 @@ export default {
   name: 'app',
   data () {
     return {
-      data: null,
-      currentDateIndex: 0
     }
   },
   components: {
     'appHeader': appHeader,
     'courtsTimeTable': courtsTimeTable,
   },
-  methods: {
-    getCourtsData: function(dateIndex) {
-      return this.data.then(function(data){
-        return data[dateIndex].courts;
-      });
+  computed: {
+    currentDate: function() {
+      if(this.masterDataJSON) {
+        return this.masterDataJSON[this.currentDateIndex].date;
+      }
     },
-    getCurrentDate: function(dateIndex) {
-      return this.data.then(function(json){
-        return json[dateIndex].date;
-      });
+    currentCourtsData: function() {
+      if(this.masterDataJSON) {
+        return this.masterDataJSON[this.currentDateIndex].courts;
+      }
     }
-  },
-  created: function() {
-    var vm = this;
-    vm.data = getJSON('../data/data.json');
-
-    vm.data.then((data) => {
-      console.log(data);
-    });
   }
 }
 </script>

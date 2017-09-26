@@ -6,16 +6,12 @@
     &:nth-child(even) {
       .timeRow__marker {
         visibility: hidden;
-        font-size: 12px;
-        opacity: .3;
-        text-align: right;
-        padding-right: 4px;
       }
     }
 
     &__marker {
       display: block;
-      font-size: em(15);
+      font-size: em(14);
       float: left;
       width: 12%;
       transform: translateY(-50%);
@@ -31,7 +27,7 @@
       }
 
       .timeslot {
-        min-height: 40px;
+        min-height: 30px;
         width: percentage(1 / 8);
         display: inline-block;
         background-color: #f5f5f5;
