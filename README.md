@@ -1,6 +1,12 @@
 # msacbball
 
-> MSAC ball courts.
+> MSAC ball courts data scraping with Node.js.
+
+Scraping MSAC timetable via public HTML site. Currently official timetable loads iFrame from a widget also reload / re-render each time user switches date. Performance gets slow.
+
+We try to cache the data in JSON and preloads the schedule in background before the user asks for them. Then only reloads the part that needs to be re-rendered.
+
+Built with Node.js and Vue.js. It is not quite finished yet. Fixnig a couple of bugs.
 
 ## Build Setup
 
