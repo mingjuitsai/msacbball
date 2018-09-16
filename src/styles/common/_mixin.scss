@@ -153,7 +153,6 @@ $grid-gutter: em(20px);
     $width: map-fetch($containers, $width);
   } @else {
     @warn '#{ $width } is an invalid argument.';
-    @return $width;
   }
 
   $max-width: rem($width, 16);

@@ -1,6 +1,7 @@
 .courtsTimeTable {
   .timeRow {
     @include clearfix;
+    position: relative;
     
 
     &:nth-child(even) {
@@ -10,15 +11,17 @@
     }
 
     &__marker {
+      position: absolute;
+      left: 0;
+      top: 0;
       display: block;
       font-size: em(14);
-      float: left;
       width: 12%;
       transform: translateY(-50%);
     }
 
     &__courtSlots {
-      float: left;
+      float: right;
       width: 88%;
 
       > li {
@@ -27,7 +30,7 @@
       }
 
       .timeslot {
-        min-height: 30px;
+        min-height: 20px;
         width: percentage(1 / 8);
         display: inline-block;
         background-color: #f5f5f5;
