@@ -15,7 +15,7 @@ Vue.mixin({
   },
   methods: {
     formatTime: function(dateObject, format) {
-      format = format ? format : 'dddd MMMM Do, YYYY';
+      format = format ? format : 'ddd Do MMM YYYY';
       if(dateObject && typeof dateObject.getMonth === 'function') {
         return fecha.format(dateObject, format);
       }

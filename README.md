@@ -1,8 +1,10 @@
-# msacbball
+# msacbball 
+[![Waffle.io - Columns and their card count](https://badge.waffle.io/mingjuitsai/msacbball.svg?columns=all)](https://waffle.io/mingjuitsai/msacbball)
 
 > MSAC ball courts data scraping with Node.js.
 
 Scraping MSAC timetable via public HTML site. Currently official timetable loads iFrame from a widget also reload / re-render each time user switches date. Performance gets slow.
+https://www.melbournesportshub.com.au/msac/basketball-court-availability/
 
 We try to cache the data in JSON and preloads the schedule in background before the user asks for them. Then only reloads the part that needs to be re-rendered.
 
@@ -22,3 +24,11 @@ npm run build
 ```
 
 For detailed explanation on how things work, consult the [docs for vue-loader](http://vuejs.github.io/vue-loader).
+
+
+## Scrape data
+
+``` bash
+# scrape data under /data
+node data
+```
