@@ -1,6 +1,4 @@
 # msacbball 
-(https://waffle.io/mingjuitsai/msacbball)
-
 > MSAC ball courts data scraping with Node.js.
 
 Data scraping MSAC timetable via public HTML site. Currently official timetable loads iFrame from a widget also reload / re-render each time user switches date. Performance gets slow.
