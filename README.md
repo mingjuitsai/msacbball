@@ -6,7 +6,7 @@ https://www.melbournesportshub.com.au/msac/basketball-court-availability/
 
 We try to cache the data in JSON and preloads the schedule in background before the user asks for them. Then only reloads the part that needs to be re-rendered.
 
-Built with Node.js and Vue.js. It is not quite finished yet. Fixnig a couple of bugs.
+Built with Node.js and Vue.js.
 
 ## Build Setup
 
